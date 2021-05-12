@@ -37,7 +37,7 @@ In order to test 2mb pages, you **MUST** have enabled the Windows group policy s
 
 In general, this test is less about 4k vs. 2mb pages, and more about the cost of provisioning pages on demand rather than in bulk.  In Windows, 4k pages are provisioned on demand as they are touched, whereas 2mb pages are provisioned immediately upon allocation.
 
-In this simple benchmark, 2mb pages outperform 4k pages dramatically - by numbers like 10x.  Although part of this speedup may comes from the larger sizes of the pages themselves, it is likely that most of the speedup comes from the fact that 2mb pages appear to be provisioned directly in VirtualAlloc (as you would expect for physically-locked addresses).  This means they do not need to be faulted and provisioned later.  I would assume - but don't know - that a simple flag to VirtualAlloc like "MEM_USE_IMMEDIATELY" that told VirtualAlloc to make 4k pages resident right away, like ther 2mb counterparts, would make 4k performance closely resemble 2mb performance.
+In this simple benchmark, 2mb pages outperform 4k pages dramatically - by numbers like 10x.  Although part of this speedup may come from the larger sizes of the pages themselves, it is likely that most of the speedup comes from the fact that 2mb pages appear to be provisioned directly in VirtualAlloc (as you would expect for physically-locked addresses).  This means they do not need to be faulted and provisioned later.  I would assume - but don't know - that a simple flag to VirtualAlloc like "MEM_USE_IMMEDIATELY" that told VirtualAlloc to make 4k pages resident right away, like ther 2mb counterparts, would make 4k performance closely resemble 2mb performance.
 
 Alas, no such flag exists, so this is purely hypothetical at the moment.
 
