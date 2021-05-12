@@ -1,7 +1,7 @@
 # largepages
 
 This is a rudimentary test of cold-start memory paging on Windows that I put together for
-[Raymond Chen's Tie](https://twitter.com/ChenCravat), who was kind enough to ask his owner to write a blog post about the architectural
+[Raymond Chen's Tie](https://twitter.com/ChenCravat), who was kind enough to ask its owner to write a blog post about the architectural
 reasons Windows doesn't yet have generally available large page support.
    
 The idea behind this utility is to see how long it takes Windows to actually provide
