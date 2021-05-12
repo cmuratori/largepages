@@ -5,7 +5,7 @@ This is a rudimentary test of cold-start memory paging on Windows that I put tog
 reasons Windows doesn't yet have generally available large page support.
    
 The idea behind this utility is to see how long it takes Windows to actually provide
-memory for use under regular 4k-page VirtualAlloc vs. "large" 2mb-page VirtualAlloc.
+memory for use under regular 4k-page demand-paged VirtualAlloc vs. "large" 2mb-page physically-locked VirtualAlloc.
 This is an important metric for command-line utilities that are trying to be very fast,
 such as sub-second compilers, but should be generally applicable to any scenario where
 the memory footprint of an application is growing.
@@ -35,8 +35,10 @@ In order to test 2mb pages, you **MUST** have enabled the Windows group policy s
 
 ### Discussion
 
-In general, this test is less about 4k vs. 2mb pages, and more about the cost of provisioning pages in general.  The 4k case is the worst possible case for provisioning, as far as I can tell: it is not only the largest number of pages, because the size is small, but it also leaves pages virtual until they are touched, causing constant page faulting into the kernel as user threads try to use the memory for the first time.
+In general, this test is less about 4k vs. 2mb pages, and more about the cost of provisioning pages on demand rather than in bulk.  In Windows, 4k pages are provisioned on demand as they are touched, whereas 2mb pages are provisioned immediately upon allocation.
 
-In this simple benchmark, 2mb pages outperform 4k pages dramatically - by numbers like 10x.  Although part of this speedup probably comes from the larger sizes of the pages themselves, it is likely that a large part of the speedup comes from the fact that 2mb pages appear to be provisioned directly in VirtualAlloc.  This means they do not need to be faulted and provisioned later.  I would assume - but don't know - that a simple flag to VirtualAlloc like "MEM_START_AS_PHYSICAL" that told VirtualAlloc to make all 4k pages allocated in the call resident right away would make the 4k page performance closely resemble the 2mb page performance.  Alas, no such flag exists, so this is purely hypothetical at the moment.
+In this simple benchmark, 2mb pages outperform 4k pages dramatically - by numbers like 10x.  Although part of this speedup may comes from the larger sizes of the pages themselves, it is likely that most of the speedup comes from the fact that 2mb pages appear to be provisioned directly in VirtualAlloc (as you would expect for physically-locked addresses).  This means they do not need to be faulted and provisioned later.  I would assume - but don't know - that a simple flag to VirtualAlloc like "MEM_USE_IMMEDIATELY" that told VirtualAlloc to make 4k pages resident right away, like ther 2mb counterparts, would make 4k performance closely resemble 2mb performance.
+
+Alas, no such flag exists, so this is purely hypothetical at the moment.
 
 \- [Casey](https://caseymuratori.com)
