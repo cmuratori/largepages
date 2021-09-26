@@ -18,6 +18,7 @@ un-REM the clang++ line to build with clang if you have it installed.
 Option | Description
 ------------ | -------------
 --large | Use 2mb pages (default: 4k pages)
+--rio   | register allocated memory with [RIORegisterBuffer][] function
 [number] | Set total allocation size in mb (default: 1024)
    
 ### Usage examples:
@@ -42,3 +43,5 @@ In this simple benchmark, 2mb pages outperform 4k pages dramatically - by number
 Alas, no such flag exists, so this is purely hypothetical at the moment.
 
 \- [Casey](https://caseymuratori.com)
+
+[RIORegisterBuffer]: https://docs.microsoft.com/en-us/windows/win32/api/mswsock/nc-mswsock-lpfn_rioregisterbuffer
