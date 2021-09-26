@@ -1,3 +1,5 @@
+#include <winsock2.h>
+#include <mswsock.h>
 #include <windows.h>
 #include <stdio.h>
 #include <immintrin.h>
@@ -52,6 +54,7 @@ int main(int ArgCount, char **Args)
     int Result = 0;
     
     int TryLargePages = false;
+    int TryRio = false;
     
     SIZE_T Kilobyte = 1024;
     SIZE_T Megabyte = 1024*1024;
@@ -69,6 +72,10 @@ int main(int ArgCount, char **Args)
         if(strcmp(Arg, "--large") == 0)
         {
             TryLargePages = true;
+        }
+        else if(strcmp(Arg, "--rio") == 0)
+        {
+            TryRio = true;
         }
         else
         {
@@ -106,6 +113,20 @@ int main(int ArgCount, char **Args)
     //
     
     SIZE_T AllocSize = PageSize * ((TotalSize + PageSize - 1) / PageSize);
+
+    RIO_EXTENSION_FUNCTION_TABLE Rio = {};
+    if (TryRio)
+    {
+        // NOTE(mmozeiko): need to get function pointers to RIO functions, and that requires dummy socket
+        WSADATA WinSockData;
+        WSAStartup(MAKEWORD(2, 2), &WinSockData);
+
+        GUID Guid = WSAID_MULTIPLE_RIO;
+        DWORD RioBytes = 0;
+        SOCKET Sock = socket(AF_UNSPEC, SOCK_STREAM, IPPROTO_TCP);
+        WSAIoctl(Sock, SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER, &Guid, sizeof(Guid), (void**)&Rio, sizeof(Rio), &RioBytes, 0, 0);
+        closesocket(Sock);
+    }
     
     // NOTE(casey): Timed portion begins here
     // {
@@ -113,6 +134,10 @@ int main(int ArgCount, char **Args)
     // NOTE(casey): "Allocate" memory
     LARGE_INTEGER Start; QueryPerformanceCounter(&Start);
     char *Memory = (char *)VirtualAlloc(0, AllocSize, VirtualAllocFlags, PAGE_READWRITE);
+    if (TryRio)
+    {
+        Rio.RIODeregisterBuffer(Rio.RIORegisterBuffer(Memory, AllocSize));
+    };
     LARGE_INTEGER Mid; QueryPerformanceCounter(&Mid);
     
     if(Memory)
